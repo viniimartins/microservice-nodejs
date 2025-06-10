@@ -9,7 +9,7 @@ import {
 import { randomUUID } from 'node:crypto'
 import { schema } from "../db/schema/index.ts"
 import { db } from "../db/client.ts"
-import { dispatchOrderCreated } from "../../broker/messages/order-created.ts"
+import { dispatchOrderCreated } from "../broker/messages/order-created.ts"
 import { ca } from "zod/v4/locales"
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
