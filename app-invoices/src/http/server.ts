@@ -23,38 +23,8 @@ app.get('/health', () => {
   return 'OK'
 })
 
-app.post('/orders', {
-  schema: {
-    body: z.object({
-      amount: z.coerce.number(),
-    })
-  }
-}, async (request, reply) => {
-  const { amount } = request.body
 
-  const orderId = randomUUID()
-
-  dispatchOrderCreated({
-    orderId,
-    amount,
-    customer: {
-      id: 'efb1ff27-b164-4756-8a45-c8a84d4e1605'
-    }
-  })
-
-  try {
-    await db.insert(schema.orders).values({
-      id: orderId,
-      customerId: 'efb1ff27-b164-4756-8a45-c8a84d4e1605',
-      amount,
-    })
-  } catch (error) {
-    console.log(error)
-  }
-
-  return reply.status(201).send()
-})
 
 app.listen({ host: '0.0.0.0', port: 3333 }).then(() => {
-  console.log('[Orders] HTTP Server running! ')
+  console.log('[Invoices] HTTP Server running! ')
 })
