@@ -1,47 +1,9 @@
-import * as awsx from '@pulumi/awsx'
-import * as aws from '@pulumi/aws'
-import * as docker from '@pulumi/docker-build'
 import * as pulumi from '@pulumi/pulumi'
 
-const ordersECRRepository = new awsx.ecr.Repository('orders-ecr', {
-  forceDelete: true,
-})
+import { ordersService } from './src/services/orders'
+import { appLoadBalancer } from './src/load-balancer'
+import { rabbitMQService } from './src/services/rabbitmq'
 
-const ordersECRToken = aws.ecr.getAuthorizationTokenOutput({
-  registryId: ordersECRRepository.repository.registryId,
-})
-
-export const ordersDockerImage = new docker.Image('orders-image', {
-  tags: [
-    pulumi.interpolate`${ordersECRRepository.repository.repositoryUrl}:latest`
-  ],
-  context: {
-    location: '../app-orders',
-  },
-  push: true,
-  platforms: [
-    'linux/amd64'
-  ],
-  registries: [
-    {
-      address: ordersECRRepository.repository.repositoryUrl,
-      username: ordersECRToken.userName,
-      password: ordersECRToken.password,
-    }
-  ]
-})
-
-const cluster = new awsx.classic.ecs.Cluster('app-cluster')
-
-const orderService = new awsx.classic.ecs.FargateService('fargate-orders', {
-  cluster,
-  desiredCount: 1,
-  waitForSteadyState: false,
-  taskDefinitionArgs: {
-    container: {
-      image: ordersDockerImage.ref,
-      cpu: 256,
-      memory: 512,
-    }
-  }
-})
+export const ordersId = ordersService.service.id
+export const rabbitMQId = rabbitMQService.service.id
+export const rabbitMQAdminUrl = pulumi.interpolate`http://${appLoadBalancer.listeners[0].endpoint.hostname}:15672`
